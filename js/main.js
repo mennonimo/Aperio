@@ -1,24 +1,19 @@
 /**
- * APERIO — Interações, Micro-animações e Performance (Vanilla JS)
- * 60fps via IntersectionObserver, requestAnimationFrame e variáveis CSS.
+ * APERIO — Coreografia de Animações (GSAP 3 + ScrollTrigger) & Interações
+ * 60fps via transforms/opacity/clip-path, gsap.matchMedia() e fallback seguro.
  */
 
 (() => {
   'use strict';
 
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const supportsFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
   /* ------------------------------------------------------------------------
-     1. BARRA DE PROGRESSO, HEADER COM BLUR E PARALLAX LEVE (rAF 60fps)
+     1. BARRA DE PROGRESSO DE LEITURA & HEADER COM BLUR (rAF LEVE)
      ------------------------------------------------------------------------ */
   const progressBar = document.getElementById('readingProgressBar');
   const siteHeader = document.getElementById('siteHeader');
-  const parallaxNodes = Array.from(document.querySelectorAll('[data-parallax]'));
-
   let scrollTicking = false;
 
-  const updateOnScroll = () => {
+  const updateHeaderAndProgress = () => {
     const scrollY = window.scrollY || window.pageYOffset;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const progress = docHeight > 0 ? Math.min(Math.max(scrollY / docHeight, 0), 1) : 0;
@@ -31,133 +26,22 @@
       siteHeader.classList.toggle('is-scrolled', scrollY > 24);
     }
 
-    if (!prefersReducedMotion && parallaxNodes.length > 0 && window.innerWidth >= 768) {
-      for (const el of parallaxNodes) {
-        const speed = parseFloat(el.dataset.parallax || '0');
-        const offset = Math.max(-140, Math.min(140, scrollY * speed));
-        el.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
-      }
-    }
-
     scrollTicking = false;
   };
 
-  const requestScrollUpdate = () => {
+  const requestScrollFrame = () => {
     if (!scrollTicking) {
       scrollTicking = true;
-      window.requestAnimationFrame(updateOnScroll);
+      window.requestAnimationFrame(updateHeaderAndProgress);
     }
   };
 
-  window.addEventListener('scroll', requestScrollUpdate, { passive: true });
-  window.addEventListener('resize', requestScrollUpdate, { passive: true });
-  updateOnScroll();
+  window.addEventListener('scroll', requestScrollFrame, { passive: true });
+  window.addEventListener('resize', requestScrollFrame, { passive: true });
+  updateHeaderAndProgress();
 
   /* ------------------------------------------------------------------------
-     2. SCROLL REVEAL SUAVE COM STAGGER (IntersectionObserver)
-     ------------------------------------------------------------------------ */
-  const revealItems = document.querySelectorAll('[data-reveal]');
-
-  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
-    const revealObserver = new IntersectionObserver(
-      (entries, observer) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const target = entry.target;
-            target.classList.add('is-visible');
-            observer.unobserve(target);
-            window.setTimeout(() => {
-              target.style.setProperty('--delay', '0ms');
-            }, 1100);
-          }
-        }
-      },
-      {
-        threshold: 0.12,
-        rootMargin: '0px 0px -40px 0px',
-      }
-    );
-
-    revealItems.forEach((item) => revealObserver.observe(item));
-  } else {
-    revealItems.forEach((item) => item.classList.add('is-visible'));
-  }
-
-  /* ------------------------------------------------------------------------
-     3. BRILHO REATIVO NAS BORDAS DOS CARDS (SPOTLIGHT)
-     ------------------------------------------------------------------------ */
-  if (supportsFinePointer) {
-    const spotlightCards = document.querySelectorAll('.spotlight-card');
-
-    spotlightCards.forEach((card) => {
-      card.addEventListener(
-        'pointermove',
-        (event) => {
-          const rect = card.getBoundingClientRect();
-          const x = event.clientX - rect.left;
-          const y = event.clientY - rect.top;
-          card.style.setProperty('--mx', `${x.toFixed(1)}px`);
-          card.style.setProperty('--my', `${y.toFixed(1)}px`);
-        },
-        { passive: true }
-      );
-    });
-  }
-
-  /* ------------------------------------------------------------------------
-     4. HOVER MAGNÉTICO NOS BOTÕES DE CTA
-     ------------------------------------------------------------------------ */
-  if (supportsFinePointer && !prefersReducedMotion) {
-    const magneticButtons = document.querySelectorAll('.btn-magnetic');
-
-    magneticButtons.forEach((btn) => {
-      const strength = btn.classList.contains('btn--header') ? 0.14 : 0.18;
-
-      btn.addEventListener('pointermove', (event) => {
-        const rect = btn.getBoundingClientRect();
-        const relX = event.clientX - rect.left - rect.width / 2;
-        const relY = event.clientY - rect.top - rect.height / 2;
-        const moveX = Math.max(-10, Math.min(10, relX * strength));
-        const moveY = Math.max(-7, Math.min(7, relY * strength));
-        btn.style.transform = `translate3d(${moveX.toFixed(1)}px, ${moveY.toFixed(1)}px, 0)`;
-      });
-
-      btn.addEventListener('pointerleave', () => {
-        btn.style.transform = '';
-      });
-    });
-  }
-
-  /* ------------------------------------------------------------------------
-     5. INCLINAÇÃO EDITORIAL SUAVE NO PAINEL PRISMA DO HERO
-     ------------------------------------------------------------------------ */
-  const heroPrism = document.getElementById('heroPrism');
-
-  if (heroPrism && supportsFinePointer && !prefersReducedMotion) {
-    const heroSection = heroPrism.closest('.hero');
-
-    if (heroSection) {
-      heroSection.addEventListener(
-        'pointermove',
-        (event) => {
-          const rect = heroSection.getBoundingClientRect();
-          const nx = (event.clientX - rect.left) / rect.width - 0.5;
-          const ny = (event.clientY - rect.top) / rect.height - 0.5;
-          const rotateY = nx * 7;
-          const rotateX = -ny * 5;
-          heroPrism.style.transform = `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
-        },
-        { passive: true }
-      );
-
-      heroSection.addEventListener('pointerleave', () => {
-        heroPrism.style.transform = '';
-      });
-    }
-  }
-
-  /* ------------------------------------------------------------------------
-     6. COMPARADOR INTERATIVO (NO CICLO DA TRAVA <-> COM O MÉTODO APERIO)
+     2. COMPARADOR INTERATIVO (NO CICLO DA TRAVA <-> COM O MÉTODO APERIO)
      ------------------------------------------------------------------------ */
   const contrastTabs = document.querySelectorAll('.contrast-tab');
   const contrastDisplay = document.getElementById('contrastDisplay');
@@ -191,7 +75,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     7. FAQ ACORDEÃO FLUIDO E ACESSÍVEL
+     3. FAQ ACORDEÃO FLUIDO E ACESSÍVEL
      ------------------------------------------------------------------------ */
   const faqAccordion = document.getElementById('faqAccordion');
 
@@ -204,7 +88,6 @@
         const targetId = trigger.getAttribute('aria-controls');
         const targetPanel = targetId ? document.getElementById(targetId) : null;
 
-        // Fecha os demais itens para manter a leitura focada
         triggers.forEach((other) => {
           if (other !== trigger) {
             other.setAttribute('aria-expanded', 'false');
@@ -223,7 +106,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     8. BARRA MÓVEL INTELIGENTE (OCULTA NO HERO E NA OFERTA/CTA FINAL)
+     4. BARRA MÓVEL INTELIGENTE (OCULTA NO HERO, NA OFERTA E NO CTA FINAL)
      ------------------------------------------------------------------------ */
   const mobileBar = document.getElementById('mobileStickyCta');
   const heroEl = document.querySelector('.hero');
@@ -262,7 +145,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     9. MODAL INSTITUCIONAL LEVE (TERMOS DE USO & PRIVACIDADE)
+     5. MODAL INSTITUCIONAL LEVE (TERMOS DE USO & PRIVACIDADE)
      ------------------------------------------------------------------------ */
   const legalModal = document.getElementById('legalModal');
   const legalTitle = document.getElementById('legalModalTitle');
@@ -331,11 +214,447 @@
     if (event.key === 'Escape') closeLegalModal();
   });
 
-  /* ------------------------------------------------------------------------
-     10. ANO ATUAL NO RODAPÉ
-     ------------------------------------------------------------------------ */
   const yearEl = document.getElementById('currentYear');
   if (yearEl) {
     yearEl.textContent = String(new Date().getFullYear());
   }
+
+  /* ------------------------------------------------------------------------
+     6. COREOGRAFIA GSAP 3 + SCROLLTRIGGER
+        Nota de segurança: elementos ficam visíveis por padrão no CSS caso
+        GSAP demore ou não carregue; toda animação só ativa após validação.
+     ------------------------------------------------------------------------ */
+  const initGsapChoreography = () => {
+    if (typeof window.gsap === 'undefined' || typeof window.ScrollTrigger === 'undefined') {
+      return;
+    }
+
+    const { gsap, ScrollTrigger } = window;
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
+    const mm = gsap.matchMedia();
+
+    mm.add(
+      {
+        isDesktop: '(min-width: 960px) and (hover: hover) and (pointer: fine)',
+        isMobile: '(max-width: 959px)',
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+      },
+      (context) => {
+        const { isDesktop, reduceMotion } = context.conditions;
+
+        // Respeita integralmente prefers-reduced-motion
+        if (reduceMotion) {
+          return;
+        }
+
+        const cleanups = [];
+
+        /* ------------------------------------------------------------------
+           6.1 ABERTURA CINEMATOGRÁFICA DA HERO (TIMELINE NO LOAD)
+           ------------------------------------------------------------------ */
+        const heroTl = gsap.timeline({
+          defaults: { ease: 'power4.out' },
+        });
+
+        // Split-text reveal: linhas sobem de dentro da máscara invisível
+        heroTl.from('.hero .split-line__inner', {
+          yPercent: 112,
+          duration: 1.05,
+          stagger: 0.14,
+          clearProps: 'transform',
+        }, 0.08);
+
+        // Tag pill, subheadline, CTA e selos entram sincronizados
+        heroTl.from('[data-hero-fade]', {
+          y: 24,
+          opacity: 0,
+          duration: 0.85,
+          stagger: 0.09,
+          ease: 'power3.out',
+          clearProps: 'transform,opacity',
+        }, 0.12);
+
+        // Abertura em fresta da foto (clip-path de dentro para fora + zoom-out)
+        const heroPhotoFrame = document.getElementById('heroPhotoFrame');
+        const heroPhotoImg = heroPhotoFrame ? heroPhotoFrame.querySelector('.hero-photo-frame__img') : null;
+
+        if (heroPhotoFrame) {
+          heroTl.fromTo(
+            heroPhotoFrame,
+            { clipPath: 'inset(0% 48% 0% 48% round 22px)' },
+            {
+              clipPath: 'inset(0% 0% 0% 0% round 22px)',
+              duration: 1.25,
+              ease: 'power4.out',
+              clearProps: 'clipPath',
+            },
+            0.18
+          );
+        }
+
+        if (heroPhotoImg) {
+          heroTl.fromTo(
+            heroPhotoImg,
+            { scale: 1.12 },
+            {
+              scale: 1,
+              duration: 1.4,
+              ease: 'power3.out',
+              clearProps: 'transform',
+            },
+            0.18
+          );
+        }
+
+        // Chip superior e micro-card glassmorphism entram por último
+        const heroStatusChip = document.getElementById('heroStatusChip');
+        const heroGlassCard = document.getElementById('heroGlassCard');
+
+        if (heroStatusChip) {
+          heroTl.from(heroStatusChip, {
+            y: -18,
+            opacity: 0,
+            scale: 0.94,
+            duration: 0.78,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+          }, 0.62);
+        }
+
+        if (heroGlassCard) {
+          heroTl.from(heroGlassCard, {
+            y: 28,
+            opacity: 0,
+            scale: 0.94,
+            duration: 0.88,
+            ease: 'power3.out',
+            clearProps: 'opacity,scale',
+          }, 0.74);
+
+          // Flutuação contínua quase imperceptível após a entrada
+          heroTl.add(() => {
+            gsap.to(heroGlassCard, {
+              y: -7,
+              duration: 3.1,
+              ease: 'sine.inOut',
+              repeat: -1,
+              yoyo: true,
+            });
+          }, '>-0.1');
+        }
+
+        /* ------------------------------------------------------------------
+           6.2 TRANSIÇÃO DE TEMPERATURA NO SCROLL (ROXO -> LARANJA -> AMARELO)
+           ------------------------------------------------------------------ */
+        const coldOrb = document.getElementById('tempOrbCold');
+        const warmOrb = document.getElementById('tempOrbWarm');
+        const solarOrb = document.getElementById('tempOrbSolar');
+        const pageMain = document.getElementById('pageMain');
+
+        if (coldOrb && warmOrb && solarOrb && pageMain) {
+          const tempTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: pageMain,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: 1.2,
+            },
+          });
+
+          // Fase 1 (Hero -> Dores): atmosfera fria/contida em roxo se intensifica
+          tempTl
+            .to(coldOrb, { opacity: 0.92, scale: 1.16, xPercent: 8, yPercent: 10, duration: 0.28 }, 0)
+            .to(warmOrb, { opacity: 0.22, scale: 1.0, duration: 0.28 }, 0)
+            .to(solarOrb, { opacity: 0.08, duration: 0.28 }, 0)
+
+            // Fase 2 (Virada de Chave -> Módulos 01/02): roxo recua e laranja aquece
+            .to(coldOrb, { opacity: 0.22, scale: 0.88, xPercent: -10, duration: 0.36 }, 0.28)
+            .to(warmOrb, { opacity: 0.88, scale: 1.18, xPercent: -14, yPercent: -8, duration: 0.36 }, 0.28)
+            .to(solarOrb, { opacity: 0.38, scale: 1.05, duration: 0.36 }, 0.28)
+
+            // Fase 3 (Módulo 03 -> Apresentador -> Oferta -> CTA Final): amarelo solar domina
+            .to(coldOrb, { opacity: 0.08, duration: 0.36 }, 0.64)
+            .to(warmOrb, { opacity: 0.64, xPercent: -6, yPercent: 8, duration: 0.36 }, 0.64)
+            .to(solarOrb, { opacity: 0.92, scale: 1.24, yPercent: -16, duration: 0.36 }, 0.64);
+        }
+
+        // Parallax sutil na malha global e no fundo do Hero (desktop)
+        const ambientGrid = document.getElementById('ambientGrid');
+        if (ambientGrid && pageMain) {
+          gsap.to(ambientGrid, {
+            yPercent: isDesktop ? 6 : 3,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: pageMain,
+              start: 'top top',
+              end: 'bottom bottom',
+              scrub: 1.4,
+            },
+          });
+        }
+
+        if (isDesktop) {
+          const heroBg = document.getElementById('heroBg');
+          const heroBeam = document.getElementById('heroBeam');
+
+          if (heroBg && heroEl) {
+            gsap.to(heroBg, {
+              y: 110,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: heroEl,
+                start: 'top top',
+                end: 'bottom top',
+                scrub: true,
+              },
+            });
+          }
+
+          if (heroBeam && heroEl) {
+            gsap.to(heroBeam, {
+              y: -70,
+              x: -30,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: heroEl,
+                start: 'top top',
+                end: 'bottom top',
+                scrub: true,
+              },
+            });
+          }
+        }
+
+        /* ------------------------------------------------------------------
+           6.3 BROKEN GRID VIVO NOS 3 MÓDULOS (ENTRADA + SCRUB EM CAMADAS)
+           ------------------------------------------------------------------ */
+        const modulesStaircase = document.getElementById('modulesStaircase');
+
+        if (modulesStaircase) {
+          const moduleCards = modulesStaircase.querySelectorAll('.module-card');
+
+          gsap.from(moduleCards, {
+            y: 44,
+            opacity: 0,
+            duration: 0.9,
+            stagger: 0.14,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+            scrollTrigger: {
+              trigger: modulesStaircase,
+              start: 'top 84%',
+              once: true,
+            },
+          });
+
+          // Velocidades verticais distintas por coluna no desktop
+          if (isDesktop) {
+            const col1 = modulesStaircase.querySelector('.module-col--m1');
+            const col2 = modulesStaircase.querySelector('.module-col--m2');
+            const col3 = modulesStaircase.querySelector('.module-col--m3');
+
+            const scrubConfig = {
+              trigger: modulesStaircase,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.15,
+            };
+
+            if (col1) {
+              gsap.fromTo(col1, { y: 34 }, { y: -16, ease: 'none', scrollTrigger: scrubConfig });
+            }
+            if (col2) {
+              gsap.fromTo(col2, { y: 12 }, { y: -36, ease: 'none', scrollTrigger: scrubConfig });
+            }
+            if (col3) {
+              gsap.fromTo(col3, { y: -14 }, { y: -62, ease: 'none', scrollTrigger: scrubConfig });
+            }
+          }
+        }
+
+        /* ------------------------------------------------------------------
+           6.4 SEÇÃO DO APRESENTADOR (CLIP-PATH REVEAL + PARALLAX SOBREPOSTO)
+           ------------------------------------------------------------------ */
+        const presenterMedia = document.getElementById('presenterMedia');
+        const presenterMain = document.getElementById('presenterMainPhoto');
+        const presenterSecondary = document.getElementById('presenterSecondaryPhoto');
+
+        if (presenterMain) {
+          const mainImg = presenterMain.querySelector('.presenter-photo__img');
+
+          const presenterTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: presenterMain,
+              start: 'top 82%',
+              once: true,
+            },
+          });
+
+          presenterTl.fromTo(
+            presenterMain,
+            { clipPath: 'inset(0% 46% 0% 46% round 20px)' },
+            {
+              clipPath: 'inset(0% 0% 0% 0% round 20px)',
+              duration: 1.2,
+              ease: 'power4.out',
+              clearProps: 'clipPath',
+            },
+            0
+          );
+
+          if (mainImg) {
+            presenterTl.fromTo(
+              mainImg,
+              { scale: 1.12 },
+              {
+                scale: 1,
+                duration: 1.35,
+                ease: 'power3.out',
+                clearProps: 'transform',
+              },
+              0
+            );
+          }
+        }
+
+        if (presenterSecondary && presenterMedia) {
+          gsap.from(presenterSecondary, {
+            opacity: 0,
+            scale: 0.94,
+            duration: 0.9,
+            ease: 'power3.out',
+            clearProps: 'opacity,scale',
+            scrollTrigger: {
+              trigger: presenterMedia,
+              start: 'top 78%',
+              once: true,
+            },
+          });
+
+          gsap.fromTo(
+            presenterSecondary,
+            { y: isDesktop ? 52 : 20 },
+            {
+              y: isDesktop ? -44 : -16,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: presenterMedia,
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: 1,
+              },
+            }
+          );
+        }
+
+        /* ------------------------------------------------------------------
+           6.5 REVEALS EDITORIAIS NAS DEMAIS SEÇÕES
+           ------------------------------------------------------------------ */
+        gsap.utils.toArray('[data-animate="fade-up"]').forEach((el) => {
+          gsap.from(el, {
+            y: 34,
+            opacity: 0,
+            duration: 0.85,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 86%',
+              once: true,
+            },
+          });
+        });
+
+        gsap.utils.toArray('[data-stagger-group]').forEach((group) => {
+          const items = group.querySelectorAll('[data-stagger-item]');
+          if (items.length === 0) return;
+
+          gsap.from(items, {
+            y: 32,
+            opacity: 0,
+            duration: 0.78,
+            stagger: 0.1,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+            scrollTrigger: {
+              trigger: group,
+              start: 'top 85%',
+              once: true,
+            },
+          });
+        });
+
+        /* ------------------------------------------------------------------
+           6.6 EFEITOS DE MOUSE EXCLUSIVOS PARA DESKTOP (SPOTLIGHT & MAGNÉTICO)
+           ------------------------------------------------------------------ */
+        if (isDesktop) {
+          // Spotlight reativo (--mouse-x, --mouse-y) nos cards de módulos, oferta e destaques
+          const spotlightCards = document.querySelectorAll('.spotlight-card');
+
+          spotlightCards.forEach((card) => {
+            const onMove = (event) => {
+              const rect = card.getBoundingClientRect();
+              const x = event.clientX - rect.left;
+              const y = event.clientY - rect.top;
+              card.style.setProperty('--mouse-x', `${x.toFixed(1)}px`);
+              card.style.setProperty('--mouse-y', `${y.toFixed(1)}px`);
+            };
+
+            card.addEventListener('pointermove', onMove, { passive: true });
+            cleanups.push(() => card.removeEventListener('pointermove', onMove));
+          });
+
+          // Botões CTA magnéticos com quickTo + retorno elástico suave
+          const magneticButtons = document.querySelectorAll('.btn-magnetic');
+
+          magneticButtons.forEach((btn) => {
+            const strength = btn.classList.contains('btn--header') ? 0.16 : 0.22;
+            const maxX = btn.classList.contains('btn--header') ? 8 : 12;
+            const maxY = btn.classList.contains('btn--header') ? 5 : 8;
+
+            const moveXTo = gsap.quickTo(btn, 'x', { duration: 0.42, ease: 'power3.out' });
+            const moveYTo = gsap.quickTo(btn, 'y', { duration: 0.42, ease: 'power3.out' });
+
+            const onPointerMove = (event) => {
+              const rect = btn.getBoundingClientRect();
+              const dx = (event.clientX - rect.left - rect.width / 2) * strength;
+              const dy = (event.clientY - rect.top - rect.height / 2) * strength;
+              moveXTo(Math.max(-maxX, Math.min(maxX, dx)));
+              moveYTo(Math.max(-maxY, Math.min(maxY, dy)));
+            };
+
+            const onPointerLeave = () => {
+              gsap.to(btn, {
+                x: 0,
+                y: 0,
+                duration: 0.72,
+                ease: 'elastic.out(1, 0.48)',
+                overwrite: 'auto',
+              });
+            };
+
+            btn.addEventListener('pointermove', onPointerMove, { passive: true });
+            btn.addEventListener('pointerleave', onPointerLeave);
+            cleanups.push(() => {
+              btn.removeEventListener('pointermove', onPointerMove);
+              btn.removeEventListener('pointerleave', onPointerLeave);
+              gsap.set(btn, { clearProps: 'x,y' });
+            });
+          });
+        }
+
+        return () => {
+          cleanups.forEach((fn) => fn());
+        };
+      }
+    );
+
+    window.addEventListener('load', () => {
+      ScrollTrigger.refresh();
+    });
+  };
+
+  initGsapChoreography();
 })();

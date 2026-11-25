@@ -26,7 +26,14 @@
   <div class="noise-overlay" aria-hidden="true"></div>
 
   <!-- Malha arquitetônica Broken Grid global -->
-  <div class="ambient-grid" aria-hidden="true" data-parallax="0.06"></div>
+  <div class="ambient-grid" id="ambientGrid" aria-hidden="true"></div>
+
+  <!-- Atmosfera dinâmica de temperatura no scroll (Roxo -> Laranja -> Amarelo Solar) -->
+  <div class="temp-atmosphere" aria-hidden="true">
+    <div class="temp-orb temp-orb--cold" id="tempOrbCold"></div>
+    <div class="temp-orb temp-orb--warm" id="tempOrbWarm"></div>
+    <div class="temp-orb temp-orb--solar" id="tempOrbSolar"></div>
+  </div>
 
   <!-- =========================================================
        1. HEADER MINIMALISTA FIXO
@@ -40,6 +47,7 @@
       <nav class="header-nav" aria-label="Navegação principal">
         <a href="#ciclo" class="header-nav__link">O Ciclo</a>
         <a href="#metodo" class="header-nav__link">O Método</a>
+        <a href="#apresentador" class="header-nav__link">Quem Ensina</a>
         <a href="#oferta" class="header-nav__link">Garantia</a>
         <a href="#faq" class="header-nav__link">Dúvidas</a>
       </nav>
@@ -58,13 +66,13 @@
     </div>
   </header>
 
-  <main>
+  <main id="pageMain">
     <!-- =========================================================
-         2. HERO SECTION (ACIMA DA DOBRA)
+         2. HERO SECTION (ABERTURA CINEMATOGRÁFICA)
          ========================================================= -->
     <section class="hero" aria-labelledby="hero-title">
       <!-- Fundo Broken Grid nativo (Desktop 16x9 / Mobile 9x16) -->
-      <div class="hero__bg" aria-hidden="true" data-parallax="0.14">
+      <div class="hero__bg" id="heroBg" aria-hidden="true">
         <picture>
           <source media="(max-width: 767px)" srcset="assets/fundo-grid-mobile.jpg">
           <img
@@ -79,32 +87,36 @@
         <div class="hero__scrim"></div>
       </div>
 
-      <!-- Feixe diagonal luminoso sutil em parallax -->
-      <div class="hero__beam" aria-hidden="true" data-parallax="-0.1"></div>
+      <!-- Feixe diagonal luminoso -->
+      <div class="hero__beam" id="heroBeam" aria-hidden="true"></div>
 
       <div class="container hero__grid">
         <!-- Coluna de Copy & Conversão -->
         <div class="hero__content">
-          <div class="pill-tag reveal" data-reveal style="--delay: 0ms;">
+          <div class="pill-tag" data-hero-fade>
             <span class="pill-tag__dot" aria-hidden="true"></span>
             <span>CURSO DE ESPONTANEIDADE</span>
           </div>
 
-          <h1 id="hero-title" class="hero__headline reveal" data-reveal style="--delay: 90ms;">
-            <span class="hero__headline-rigid">De quem se esconde...</span>
-            <span class="hero__headline-fluid">para quem inspira.</span>
+          <h1 id="hero-title" class="hero__headline">
+            <span class="split-line">
+              <span class="split-line__inner hero__headline-rigid">De quem se esconde...</span>
+            </span>
+            <span class="split-line">
+              <span class="split-line__inner hero__headline-fluid">para quem inspira.</span>
+            </span>
           </h1>
 
-          <p class="hero__subheadline reveal" data-reveal style="--delay: 170ms;">
+          <p class="hero__subheadline" data-hero-fade>
             O método definitivo contra a timidez. Pare de ensaiar o que dizer, destrave sua comunicação e tenha presença em qualquer conversa.
           </p>
 
-          <div class="hero__actions reveal" data-reveal style="--delay: 250ms;">
+          <div class="hero__actions" data-hero-fade>
             <a
               href="https://pay.kiwify.com.br/UISqKy0"
               target="_blank"
               rel="noopener noreferrer"
-              class="btn btn--primary btn--lg btn-magnetic"
+              class="btn btn--primary btn--lg btn-magnetic btn-shimmer"
             >
               <span>GARANTIR MINHA VAGA</span>
               <svg class="btn__arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -113,7 +125,7 @@
             </a>
           </div>
 
-          <ul class="hero__trust reveal" data-reveal style="--delay: 320ms;" aria-label="Destaques do curso">
+          <ul class="hero__trust" data-hero-fade aria-label="Destaques do curso">
             <li class="trust-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
@@ -141,21 +153,45 @@
           </ul>
         </div>
 
-        <!-- Coluna Visual Broken Grid (Metáfora: Casulo de Vidro -> Luz Espontânea) -->
-        <div class="hero__visual reveal" data-reveal style="--delay: 200ms;" aria-hidden="true">
-          <div class="prism-stage" id="heroPrism">
+        <!-- Coluna Visual Broken Grid (Foto em abertura de fresta + Micro-card glassmorphism) -->
+        <div class="hero__visual">
+          <div class="hero-showcase" id="heroShowcase">
             <!-- Cantoneiras arquitetônicas da identidade Aperio -->
-            <span class="vf-corner vf-corner--tl"></span>
-            <span class="vf-corner vf-corner--tr"></span>
-            <span class="vf-corner vf-corner--bl"></span>
-            <span class="vf-corner vf-corner--br"></span>
+            <span class="vf-corner vf-corner--tl" aria-hidden="true"></span>
+            <span class="vf-corner vf-corner--tr" aria-hidden="true"></span>
+            <span class="vf-corner vf-corner--bl" aria-hidden="true"></span>
+            <span class="vf-corner vf-corner--br" aria-hidden="true"></span>
 
-            <!-- Painel principal em vidro fosco ("O Casulo que se abre") -->
-            <div class="prism-card">
-              <div class="prism-card__glow"></div>
-              <div class="prism-card__header">
-                <span class="prism-card__code">DO MÉTODO 01—03</span>
-                <svg class="spark-icon spark-icon--warm" width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <!-- Chip editorial superior direito -->
+            <div class="hero-status-chip" id="heroStatusChip" aria-hidden="true">
+              <span class="float-badge__dot float-badge__dot--yellow"></span>
+              <div>
+                <small>DEPOIS DO MÉTODO</small>
+                <strong>Presença &amp; naturalidade</strong>
+              </div>
+            </div>
+
+            <!-- Foto principal com reveal de fresta (clip-path + zoom-out) -->
+            <figure class="hero-photo-frame" id="heroPhotoFrame">
+              <img
+                src="assets/foto-cadeira.jpg"
+                alt="Criador do Método APERIO sorrindo com postura relaxada e espontânea"
+                class="hero-photo-frame__img"
+                width="960"
+                height="1696"
+                fetchpriority="high"
+              >
+              <div class="hero-photo-frame__overlay" aria-hidden="true"></div>
+            </figure>
+
+            <!-- Micro-card flutuante em glassmorphism (entra por último + flutuação contínua) -->
+            <div class="hero-glass-card" id="heroGlassCard" aria-hidden="true">
+              <div class="hero-glass-card__top">
+                <div class="hero-glass-card__brand">
+                  <img src="assets/logo-simbolo.png" alt="" width="512" height="409">
+                  <span>DO MÉTODO 01—03</span>
+                </div>
+                <svg class="spark-icon spark-icon--warm" width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <path d="M12 1L14.6 9.4L23 12L14.6 14.6L12 23L9.4 14.6L1 12L9.4 9.4L12 1Z" fill="url(#sparkWarmHero)"/>
                   <defs>
                     <linearGradient id="sparkWarmHero" x1="1" y1="1" x2="23" y2="23" gradientUnits="userSpaceOnUse">
@@ -166,18 +202,7 @@
                 </svg>
               </div>
 
-              <div class="prism-card__emblem">
-                <div class="prism-card__ring"></div>
-                <img
-                  src="assets/logo-simbolo.png"
-                  alt=""
-                  width="512"
-                  height="409"
-                  class="prism-card__symbol"
-                >
-              </div>
-
-              <div class="prism-card__trajectory">
+              <div class="hero-glass-card__steps">
                 <div class="traj-step traj-step--purple">
                   <span class="traj-step__num">01</span>
                   <span class="traj-step__label">Desvende</span>
@@ -192,23 +217,6 @@
                   <span class="traj-step__num">03</span>
                   <span class="traj-step__label">Inspire</span>
                 </div>
-              </div>
-            </div>
-
-            <!-- Microcards assimétricos em Broken Grid -->
-            <div class="float-badge float-badge--cold">
-              <span class="float-badge__dot float-badge__dot--purple"></span>
-              <div>
-                <small>ANTES</small>
-                <strong>Ensaio mental &amp; trava</strong>
-              </div>
-            </div>
-
-            <div class="float-badge float-badge--warm">
-              <span class="float-badge__dot float-badge__dot--yellow"></span>
-              <div>
-                <small>DEPOIS DO MÉTODO</small>
-                <strong>Presença &amp; naturalidade</strong>
               </div>
             </div>
           </div>
@@ -237,7 +245,6 @@
         <i class="ribbon-spark">✦</i>
         <span>COMUNICAÇÃO AUTÊNTICA</span>
         <i class="ribbon-spark">✦</i>
-        <!-- Duplicação para loop contínuo -->
         <span>ESPONTANEIDADE REAL</span>
         <i class="ribbon-spark">✦</i>
         <span>PRESENÇA EM QUALQUER CONVERSA</span>
@@ -255,10 +262,10 @@
          3. SEÇÃO DE IDENTIFICAÇÃO — O CICLO DA TRAVA (FRIO / ROXO)
          ========================================================= -->
     <section class="section section--cycle" id="ciclo" aria-labelledby="cycle-title">
-      <div class="cycle-glow" aria-hidden="true" data-parallax="0.08"></div>
+      <div class="cycle-glow" aria-hidden="true"></div>
 
       <div class="container">
-        <header class="section-header section-header--left reveal" data-reveal>
+        <header class="section-header section-header--left" data-animate="fade-up">
           <h2 id="cycle-title" class="section-title">
             <span class="title-rigid">Você tem muito a dizer.</span>
             <span class="title-italic title-italic--cool">Mas na hora H, o silêncio fala mais alto.</span>
@@ -269,8 +276,8 @@
         </header>
 
         <!-- Broken Grid Assimétrico das Dores Reais -->
-        <div class="pain-grid">
-          <article class="pain-card spotlight-card spotlight-card--purple reveal" data-reveal style="--delay: 0ms;">
+        <div class="pain-grid" data-stagger-group>
+          <article class="pain-card spotlight-card spotlight-card--purple" data-stagger-item>
             <div class="pain-card__meta">
               <span class="pain-card__index">01</span>
               <svg class="brand-asterisk" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -283,7 +290,7 @@
             </p>
           </article>
 
-          <article class="pain-card pain-card--offset spotlight-card spotlight-card--purple reveal" data-reveal style="--delay: 110ms;">
+          <article class="pain-card pain-card--offset spotlight-card spotlight-card--purple" data-stagger-item>
             <div class="pain-card__meta">
               <span class="pain-card__index">02</span>
               <svg class="brand-asterisk" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -296,7 +303,7 @@
             </p>
           </article>
 
-          <article class="pain-card spotlight-card spotlight-card--purple reveal" data-reveal style="--delay: 200ms;">
+          <article class="pain-card spotlight-card spotlight-card--purple" data-stagger-item>
             <div class="pain-card__meta">
               <span class="pain-card__index">03</span>
               <svg class="brand-asterisk" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -309,7 +316,7 @@
             </p>
           </article>
 
-          <article class="pain-card pain-card--offset spotlight-card spotlight-card--purple reveal" data-reveal style="--delay: 280ms;">
+          <article class="pain-card pain-card--offset spotlight-card spotlight-card--purple" data-stagger-item>
             <div class="pain-card__meta">
               <span class="pain-card__index">04</span>
               <svg class="brand-asterisk" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -324,7 +331,7 @@
         </div>
 
         <!-- A Virada de Chave Aperio (Transição Frio -> Quente com Ondas Abstratas) -->
-        <div class="shift-panel reveal" data-reveal>
+        <div class="shift-panel" data-animate="fade-up">
           <div class="shift-panel__bg" aria-hidden="true">
             <img
               src="assets/ondas-abstratas.jpg"
@@ -381,13 +388,13 @@
     </section>
 
     <!-- =========================================================
-         4. SEÇÃO "POR DENTRO DO MÉTODO" — 3 MÓDULOS EM BROKEN GRID ASCENDENTE
+         4. SEÇÃO "POR DENTRO DO MÉTODO" — 3 MÓDULOS EM BROKEN GRID VIVO
          ========================================================= -->
     <section class="section section--method" id="metodo" aria-labelledby="method-title">
-      <div class="method-beam" aria-hidden="true" data-parallax="-0.09"></div>
+      <div class="method-beam" id="methodBeam" aria-hidden="true"></div>
 
       <div class="container">
-        <header class="section-header section-header--center reveal" data-reveal>
+        <header class="section-header section-header--center" data-animate="fade-up">
           <span class="eyebrow eyebrow--gradient">POR DENTRO DO MÉTODO</span>
           <h2 id="method-title" class="section-title">
             <span class="title-rigid">A jornada em 3 estágios:</span>
@@ -398,109 +405,115 @@
           </p>
         </header>
 
-        <!-- Cards em Broken Grid Ascendente (Roxo -> Laranja -> Amarelo) -->
-        <div class="modules-staircase">
+        <!-- Cards em Broken Grid Ascendente com velocidades diferenciadas no scroll -->
+        <div class="modules-staircase" id="modulesStaircase">
           <!-- MÓDULO 01 — Roxo -->
-          <article class="module-card module-card--m1 spotlight-card spotlight-card--purple reveal" data-reveal style="--delay: 0ms;">
-            <div class="module-card__bar" aria-hidden="true"></div>
-            <div class="module-card__top">
-              <span class="module-pill module-pill--m1">MÓDULO 01</span>
-              <span class="module-stage">Consciência &amp; Raiz</span>
-            </div>
-            <h3 class="module-card__title">Desvende a Timidez</h3>
-            <p class="module-card__desc">
-              A base que ninguém explica: antes de forçar coragem, você ilumina exatamente como o bloqueio nasce no seu cérebro e como desligar o alarme falso.
-            </p>
-            <ul class="module-list">
-              <li>
-                <svg class="module-bullet module-bullet--purple" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 2V22M2 12H22M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2.5"/>
-                </svg>
-                <span>Entenda os gatilhos reais do medo e da vergonha</span>
-              </li>
-              <li>
-                <svg class="module-bullet module-bullet--purple" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 2V22M2 12H22M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2.5"/>
-                </svg>
-                <span>Mapeie os padrões invisíveis que bloqueiam sua fala</span>
-              </li>
-              <li>
-                <svg class="module-bullet module-bullet--purple" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 2V22M2 12H22M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2.5"/>
-                </svg>
-                <span>Desarme o ciclo mental de autocrítica que te trava</span>
-              </li>
-            </ul>
-          </article>
+          <div class="module-col module-col--m1" data-module-speed="1">
+            <article class="module-card module-card--m1 spotlight-card spotlight-card--purple">
+              <div class="module-card__bar" aria-hidden="true"></div>
+              <div class="module-card__top">
+                <span class="module-pill module-pill--m1">MÓDULO 01</span>
+                <span class="module-stage">Consciência &amp; Raiz</span>
+              </div>
+              <h3 class="module-card__title">Desvende a Timidez</h3>
+              <p class="module-card__desc">
+                A base que ninguém explica: antes de forçar coragem, você ilumina exatamente como o bloqueio nasce no seu cérebro e como desligar o alarme falso.
+              </p>
+              <ul class="module-list">
+                <li>
+                  <svg class="module-bullet module-bullet--purple" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 2V22M2 12H22M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2.5"/>
+                  </svg>
+                  <span>Entenda os gatilhos reais do medo e da vergonha</span>
+                </li>
+                <li>
+                  <svg class="module-bullet module-bullet--purple" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 2V22M2 12H22M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2.5"/>
+                  </svg>
+                  <span>Mapeie os padrões invisíveis que bloqueiam sua fala</span>
+                </li>
+                <li>
+                  <svg class="module-bullet module-bullet--purple" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 2V22M2 12H22M4.93 4.93L19.07 19.07M19.07 4.93L4.93 19.07" stroke="currentColor" stroke-width="2.5"/>
+                  </svg>
+                  <span>Desarme o ciclo mental de autocrítica que te trava</span>
+                </li>
+              </ul>
+            </article>
+          </div>
 
           <!-- MÓDULO 02 — Laranja -->
-          <article class="module-card module-card--m2 spotlight-card spotlight-card--orange reveal" data-reveal style="--delay: 140ms;">
-            <div class="module-card__bar" aria-hidden="true"></div>
-            <div class="module-card__top">
-              <span class="module-pill module-pill--m2">MÓDULO 02</span>
-              <span class="module-stage">Coragem &amp; Ação</span>
-            </div>
-            <h3 class="module-card__title">Quebre a Barreira</h3>
-            <p class="module-card__desc">
-              A fase de ruptura. Técnicas práticas e progressivas para atravessar o desconforto inicial e assumir o controle da sua própria voz no mundo real.
-            </p>
-            <ul class="module-list">
-              <li>
-                <svg class="module-bullet module-bullet--orange" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
-                </svg>
-                <span>Vença o medo do julgamento alheio na raiz</span>
-              </li>
-              <li>
-                <svg class="module-bullet module-bullet--orange" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
-                </svg>
-                <span>Construa autoconfiança sólida por meio da prática</span>
-              </li>
-              <li>
-                <svg class="module-bullet module-bullet--orange" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
-                </svg>
-                <span>Expresse-se com coragem, clareza e sem filtros paralisantes</span>
-              </li>
-            </ul>
-          </article>
+          <div class="module-col module-col--m2" data-module-speed="2">
+            <article class="module-card module-card--m2 spotlight-card spotlight-card--orange">
+              <div class="module-card__bar" aria-hidden="true"></div>
+              <div class="module-card__top">
+                <span class="module-pill module-pill--m2">MÓDULO 02</span>
+                <span class="module-stage">Coragem &amp; Ação</span>
+              </div>
+              <h3 class="module-card__title">Quebre a Barreira</h3>
+              <p class="module-card__desc">
+                A fase de ruptura. Técnicas práticas e progressivas para atravessar o desconforto inicial e assumir o controle da sua própria voz no mundo real.
+              </p>
+              <ul class="module-list">
+                <li>
+                  <svg class="module-bullet module-bullet--orange" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+                  </svg>
+                  <span>Vença o medo do julgamento alheio na raiz</span>
+                </li>
+                <li>
+                  <svg class="module-bullet module-bullet--orange" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+                  </svg>
+                  <span>Construa autoconfiança sólida por meio da prática</span>
+                </li>
+                <li>
+                  <svg class="module-bullet module-bullet--orange" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+                  </svg>
+                  <span>Expresse-se com coragem, clareza e sem filtros paralisantes</span>
+                </li>
+              </ul>
+            </article>
+          </div>
 
           <!-- MÓDULO 03 — Amarelo Solar -->
-          <article class="module-card module-card--m3 spotlight-card spotlight-card--yellow reveal" data-reveal style="--delay: 280ms;">
-            <div class="module-card__bar" aria-hidden="true"></div>
-            <div class="module-card__top">
-              <span class="module-pill module-pill--m3">MÓDULO 03</span>
-              <span class="module-stage">Fluidez &amp; Presença</span>
-            </div>
-            <h3 class="module-card__title">Desperte Seu Carisma</h3>
-            <p class="module-card__desc">
-              Quando a trava sai de cena, sua personalidade aparece. Domine o ritmo das conversas e torne-se alguém que as pessoas gostam genuinamente de ouvir.
-            </p>
-            <ul class="module-list">
-              <li>
-                <svg class="module-bullet module-bullet--yellow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
-                </svg>
-                <span>Converse com naturalidade em qualquer ambiente</span>
-              </li>
-              <li>
-                <svg class="module-bullet module-bullet--yellow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
-                </svg>
-                <span>Fale em público e em grupos com presença magnética</span>
-              </li>
-              <li>
-                <svg class="module-bullet module-bullet--yellow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
-                </svg>
-                <span>Crie conexões reais e memoráveis com espontaneidade</span>
-              </li>
-            </ul>
-          </article>
+          <div class="module-col module-col--m3" data-module-speed="3">
+            <article class="module-card module-card--m3 spotlight-card spotlight-card--yellow">
+              <div class="module-card__bar" aria-hidden="true"></div>
+              <div class="module-card__top">
+                <span class="module-pill module-pill--m3">MÓDULO 03</span>
+                <span class="module-stage">Fluidez &amp; Presença</span>
+              </div>
+              <h3 class="module-card__title">Desperte Seu Carisma</h3>
+              <p class="module-card__desc">
+                Quando a trava sai de cena, sua personalidade aparece. Domine o ritmo das conversas e torne-se alguém que as pessoas gostam genuinamente de ouvir.
+              </p>
+              <ul class="module-list">
+                <li>
+                  <svg class="module-bullet module-bullet--yellow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+                  </svg>
+                  <span>Converse com naturalidade em qualquer ambiente</span>
+                </li>
+                <li>
+                  <svg class="module-bullet module-bullet--yellow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+                  </svg>
+                  <span>Fale em público e em grupos com presença magnética</span>
+                </li>
+                <li>
+                  <svg class="module-bullet module-bullet--yellow" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+                  </svg>
+                  <span>Crie conexões reais e memoráveis com espontaneidade</span>
+                </li>
+              </ul>
+            </article>
+          </div>
         </div>
 
-        <div class="method-cta reveal" data-reveal>
+        <div class="method-cta" data-animate="fade-up">
           <a
             href="https://pay.kiwify.com.br/UISqKy0"
             target="_blank"
@@ -521,15 +534,15 @@
          ========================================================= -->
     <section class="section section--benefits" id="diferenciais" aria-labelledby="benefits-title">
       <div class="container">
-        <header class="section-header section-header--left reveal" data-reveal>
+        <header class="section-header section-header--left" data-animate="fade-up">
           <h2 id="benefits-title" class="section-title">
             <span class="title-rigid">Menos teoria vazia.</span>
             <span class="title-italic title-italic--warm">Mais segurança real no dia a dia.</span>
           </h2>
         </header>
 
-        <div class="benefits-grid">
-          <article class="benefit-card spotlight-card spotlight-card--warm reveal" data-reveal style="--delay: 0ms;">
+        <div class="benefits-grid" data-stagger-group>
+          <article class="benefit-card spotlight-card spotlight-card--warm" data-stagger-item>
             <div class="benefit-card__icon" aria-hidden="true">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="2.2" fill="currentColor"/>
@@ -544,7 +557,7 @@
             </p>
           </article>
 
-          <article class="benefit-card spotlight-card spotlight-card--warm reveal" data-reveal style="--delay: 90ms;">
+          <article class="benefit-card spotlight-card spotlight-card--warm" data-stagger-item>
             <div class="benefit-card__icon" aria-hidden="true">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                 <path d="M9 11L11.2 13.2L15.5 8.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -558,7 +571,7 @@
             </p>
           </article>
 
-          <article class="benefit-card spotlight-card spotlight-card--warm reveal" data-reveal style="--delay: 180ms;">
+          <article class="benefit-card spotlight-card spotlight-card--warm" data-stagger-item>
             <div class="benefit-card__icon" aria-hidden="true">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                 <path d="M18.178 8C20.289 8 22 9.79 22 12C22 14.21 20.289 16 18.178 16C15.178 16 13.5 12 12 12C10.5 12 8.822 16 5.822 16C3.711 16 2 14.21 2 12C2 9.79 3.711 8 5.822 8C8.822 8 10.5 12 12 12C13.5 12 15.178 8 18.178 8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -570,7 +583,7 @@
             </p>
           </article>
 
-          <article class="benefit-card spotlight-card spotlight-card--warm reveal" data-reveal style="--delay: 270ms;">
+          <article class="benefit-card spotlight-card spotlight-card--warm" data-stagger-item>
             <div class="benefit-card__icon" aria-hidden="true">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
                 <path d="M16 19C16 16.8 14.2 15 12 15C9.8 15 8 16.8 8 19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -590,7 +603,87 @@
     </section>
 
     <!-- =========================================================
-         6. SEÇÃO DE OFERTA + GARANTIA INCONDICIONAL DE 7 DIAS
+         6. SEÇÃO DO APRESENTADOR (BROKEN GRID COM CLIP-PATH + PARALLAX)
+         ========================================================= -->
+    <section class="section section--presenter" id="apresentador" aria-labelledby="presenter-title">
+      <div class="container presenter-grid">
+        <!-- Composição fotográfica em camadas (Foto Podcast + Foto Com Apoiadores) -->
+        <div class="presenter-media" id="presenterMedia">
+          <span class="vf-corner vf-corner--tl" aria-hidden="true"></span>
+          <span class="vf-corner vf-corner--br" aria-hidden="true"></span>
+
+          <figure class="presenter-photo presenter-photo--main" id="presenterMainPhoto">
+            <img
+              src="assets/foto-podcast.jpg"
+              alt="Criador do Método APERIO participando de conversa ao vivo em estúdio de podcast"
+              class="presenter-photo__img"
+              loading="lazy"
+              decoding="async"
+              width="1280"
+              height="928"
+            >
+            <div class="presenter-photo__scrim" aria-hidden="true"></div>
+            <figcaption class="presenter-photo__tag">
+              <span class="pill-tag__dot" aria-hidden="true"></span>
+              <span>Microfone aberto, zero roteiro engessado</span>
+            </figcaption>
+          </figure>
+
+          <figure class="presenter-photo presenter-photo--secondary" id="presenterSecondaryPhoto">
+            <img
+              src="assets/foto-apoiadores.jpg"
+              alt="Momento espontâneo de conexão com grupo de apoiadores"
+              class="presenter-photo__img"
+              loading="lazy"
+              decoding="async"
+              width="800"
+              height="1067"
+            >
+            <div class="presenter-photo__scrim presenter-photo__scrim--soft" aria-hidden="true"></div>
+            <figcaption class="presenter-photo__caption">Conexões reais fora das telas</figcaption>
+          </figure>
+        </div>
+
+        <!-- Copy editorial do criador -->
+        <div class="presenter-content" data-animate="fade-up">
+          <span class="eyebrow eyebrow--warm">QUEM ESTÁ POR TRÁS DO MÉTODO</span>
+          <h2 id="presenter-title" class="section-title">
+            <span class="title-rigid">Espontaneidade vivida</span>
+            <span class="title-italic title-italic--warm">antes de ser ensinada.</span>
+          </h2>
+          <p class="presenter-content__text">
+            O <strong>APERIO</strong> não nasceu em livros teóricos desconectados da realidade — nasceu na prática, enfrentando de frente a trava de falar em grupo, abrir a câmera e sustentar uma conversa sob pressão.
+          </p>
+          <p class="presenter-content__text">
+            Cada etapa do método foi testada no mundo real: de conversas cotidianas até estúdios de podcast e encontros presenciais, provando que presença e carisma não são dons exclusivos de poucos, mas habilidades treináveis por qualquer pessoa disposta a quebrar o padrão do silêncio.
+          </p>
+
+          <ul class="presenter-pillars">
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+              </svg>
+              <span>Didática direta, sem enrolação nem máscaras sociais</span>
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+              </svg>
+              <span>Passo a passo testado em conversas reais, câmeras e público</span>
+            </li>
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 1.5L14.5 9.5L22.5 12L14.5 14.5L12 22.5L9.5 14.5L1.5 12L9.5 9.5L12 1.5Z" fill="currentColor"/>
+              </svg>
+              <span>Foco em desbloquear a sua personalidade autêntica</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================
+         7. SEÇÃO DE OFERTA + GARANTIA INCONDICIONAL DE 7 DIAS
          ========================================================= -->
     <section class="section section--offer" id="oferta" aria-labelledby="offer-title">
       <div class="offer-atmosphere" aria-hidden="true">
@@ -605,8 +698,8 @@
       </div>
 
       <div class="container">
-        <div class="offer-card-wrap reveal" data-reveal>
-          <div class="offer-card">
+        <div class="offer-card-wrap" data-animate="fade-up">
+          <div class="offer-card spotlight-card spotlight-card--offer">
             <!-- Topo da oferta -->
             <div class="offer-card__header">
               <img
@@ -706,7 +799,7 @@
                 href="https://pay.kiwify.com.br/UISqKy0"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="btn btn--primary btn--xl btn-magnetic"
+                class="btn btn--primary btn--xl btn-magnetic btn-shimmer"
               >
                 <span>GARANTIR MINHA VAGA</span>
                 <svg class="btn__arrow" width="19" height="19" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -734,11 +827,11 @@
     </section>
 
     <!-- =========================================================
-         7. PERGUNTAS FREQUENTES (FAQ)
+         8. PERGUNTAS FREQUENTES (FAQ)
          ========================================================= -->
     <section class="section section--faq" id="faq" aria-labelledby="faq-title">
       <div class="container faq-layout">
-        <header class="faq-header reveal" data-reveal>
+        <header class="faq-header" data-animate="fade-up">
           <h2 id="faq-title" class="section-title">
             <span class="title-rigid">Perguntas</span>
             <span class="title-italic title-italic--warm">frequentes.</span>
@@ -748,8 +841,8 @@
           </p>
         </header>
 
-        <div class="faq-list" id="faqAccordion">
-          <article class="faq-item reveal" data-reveal style="--delay: 0ms;">
+        <div class="faq-list" id="faqAccordion" data-stagger-group>
+          <article class="faq-item" data-stagger-item>
             <h3 class="faq-item__heading">
               <button
                 type="button"
@@ -771,7 +864,7 @@
             </div>
           </article>
 
-          <article class="faq-item reveal" data-reveal style="--delay: 60ms;">
+          <article class="faq-item" data-stagger-item>
             <h3 class="faq-item__heading">
               <button
                 type="button"
@@ -793,7 +886,7 @@
             </div>
           </article>
 
-          <article class="faq-item reveal" data-reveal style="--delay: 120ms;">
+          <article class="faq-item" data-stagger-item>
             <h3 class="faq-item__heading">
               <button
                 type="button"
@@ -815,7 +908,7 @@
             </div>
           </article>
 
-          <article class="faq-item reveal" data-reveal style="--delay: 180ms;">
+          <article class="faq-item" data-stagger-item>
             <h3 class="faq-item__heading">
               <button
                 type="button"
@@ -837,7 +930,7 @@
             </div>
           </article>
 
-          <article class="faq-item reveal" data-reveal style="--delay: 240ms;">
+          <article class="faq-item" data-stagger-item>
             <h3 class="faq-item__heading">
               <button
                 type="button"
@@ -863,7 +956,7 @@
     </section>
 
     <!-- =========================================================
-         8. CTA FINAL
+         9. CTA FINAL
          ========================================================= -->
     <section class="section section--final-cta" aria-labelledby="final-cta-title">
       <div class="final-cta__bg" aria-hidden="true">
@@ -878,7 +971,7 @@
         <div class="final-cta__scrim"></div>
       </div>
 
-      <div class="container final-cta__inner reveal" data-reveal>
+      <div class="container final-cta__inner" data-animate="fade-up">
         <img
           src="assets/logo-simbolo.png"
           alt=""
@@ -903,7 +996,7 @@
           href="https://pay.kiwify.com.br/UISqKy0"
           target="_blank"
           rel="noopener noreferrer"
-          class="btn btn--primary btn--xl btn-magnetic"
+          class="btn btn--primary btn--xl btn-magnetic btn-shimmer"
         >
           <span>GARANTIR MINHA VAGA</span>
           <svg class="btn__arrow" width="19" height="19" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -957,7 +1050,7 @@
       href="https://pay.kiwify.com.br/UISqKy0"
       target="_blank"
       rel="noopener noreferrer"
-      class="btn btn--primary btn--sm"
+      class="btn btn--primary btn--sm btn-shimmer"
       tabindex="-1"
     >
       <span>GARANTIR VAGA</span>
@@ -983,6 +1076,9 @@
     </div>
   </div>
 
+  <!-- GSAP 3 + ScrollTrigger via CDN + Script Principal -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js" defer></script>
   <script src="js/main.js" defer></script>
 </body>
 </html>
