@@ -237,12 +237,13 @@
 
     mm.add(
       {
-        isDesktop: '(min-width: 960px) and (hover: hover) and (pointer: fine)',
+        isDesktop: '(min-width: 960px)',
+        canHover: '(any-hover: hover) and (any-pointer: fine)',
         isMobile: '(max-width: 959px)',
         reduceMotion: '(prefers-reduced-motion: reduce)',
       },
       (context) => {
-        const { isDesktop, reduceMotion } = context.conditions;
+        const { isDesktop, canHover, reduceMotion } = context.conditions;
 
         // Respeita integralmente prefers-reduced-motion
         if (reduceMotion) {
@@ -587,14 +588,15 @@
         });
 
         /* ------------------------------------------------------------------
-           6.6 EFEITOS DE MOUSE EXCLUSIVOS PARA DESKTOP (SPOTLIGHT & MAGNÉTICO)
+           6.6 EFEITOS DE MOUSE PARA DESKTOP (SPOTLIGHT, MAGNÉTICO & CARD HERO)
            ------------------------------------------------------------------ */
-        if (isDesktop) {
+        if (canHover) {
           // Spotlight reativo (--mouse-x, --mouse-y) nos cards de módulos, oferta e destaques
           const spotlightCards = document.querySelectorAll('.spotlight-card');
 
           spotlightCards.forEach((card) => {
             const onMove = (event) => {
+              if (event.pointerType === 'touch') return;
               const rect = card.getBoundingClientRect();
               const x = event.clientX - rect.left;
               const y = event.clientY - rect.top;
@@ -606,31 +608,36 @@
             cleanups.push(() => card.removeEventListener('pointermove', onMove));
           });
 
-          // Botões CTA magnéticos com quickTo + retorno elástico suave
+          // Botões CTA magnéticos (suaves, responsivos e com retorno elástico)
           const magneticButtons = document.querySelectorAll('.btn-magnetic');
 
           magneticButtons.forEach((btn) => {
-            const strength = btn.classList.contains('btn--header') ? 0.16 : 0.22;
-            const maxX = btn.classList.contains('btn--header') ? 8 : 12;
-            const maxY = btn.classList.contains('btn--header') ? 5 : 8;
-
-            const moveXTo = gsap.quickTo(btn, 'x', { duration: 0.42, ease: 'power3.out' });
-            const moveYTo = gsap.quickTo(btn, 'y', { duration: 0.42, ease: 'power3.out' });
+            const isHeader = btn.classList.contains('btn--header');
+            const strength = isHeader ? 0.22 : 0.28;
+            const maxX = isHeader ? 10 : 16;
+            const maxY = isHeader ? 6 : 10;
 
             const onPointerMove = (event) => {
+              if (event.pointerType === 'touch') return;
               const rect = btn.getBoundingClientRect();
               const dx = (event.clientX - rect.left - rect.width / 2) * strength;
               const dy = (event.clientY - rect.top - rect.height / 2) * strength;
-              moveXTo(Math.max(-maxX, Math.min(maxX, dx)));
-              moveYTo(Math.max(-maxY, Math.min(maxY, dy)));
+
+              gsap.to(btn, {
+                x: Math.max(-maxX, Math.min(maxX, dx)),
+                y: Math.max(-maxY, Math.min(maxY, dy)),
+                duration: 0.32,
+                ease: 'power3.out',
+                overwrite: 'auto',
+              });
             };
 
             const onPointerLeave = () => {
               gsap.to(btn, {
                 x: 0,
                 y: 0,
-                duration: 0.72,
-                ease: 'elastic.out(1, 0.48)',
+                duration: 0.75,
+                ease: 'elastic.out(1, 0.45)',
                 overwrite: 'auto',
               });
             };
@@ -640,9 +647,92 @@
             cleanups.push(() => {
               btn.removeEventListener('pointermove', onPointerMove);
               btn.removeEventListener('pointerleave', onPointerLeave);
+              gsap.killTweensOf(btn);
               gsap.set(btn, { clearProps: 'x,y' });
             });
           });
+
+          // Card principal do Hero seguindo o mouse com tilt 3D e parallax em camadas
+          const heroShowcase = document.getElementById('heroShowcase');
+          if (heroShowcase && heroEl) {
+            const onHeroMove = (event) => {
+              if (event.pointerType === 'touch') return;
+              const rect = heroEl.getBoundingClientRect();
+              const nx = (event.clientX - rect.left) / rect.width - 0.5;
+              const ny = (event.clientY - rect.top) / rect.height - 0.5;
+
+              gsap.to(heroShowcase, {
+                transformPerspective: 1000,
+                rotateY: nx * 10,
+                rotateX: -ny * 7,
+                x: nx * 16,
+                y: ny * 10,
+                duration: 0.72,
+                ease: 'power3.out',
+                overwrite: 'auto',
+              });
+
+              if (heroGlassCard) {
+                gsap.to(heroGlassCard, {
+                  x: nx * 20,
+                  duration: 0.85,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                });
+              }
+
+              if (heroStatusChip) {
+                gsap.to(heroStatusChip, {
+                  x: nx * -14,
+                  y: ny * -8,
+                  duration: 0.85,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                });
+              }
+            };
+
+            const onHeroLeave = () => {
+              gsap.to(heroShowcase, {
+                rotateY: 0,
+                rotateX: 0,
+                x: 0,
+                y: 0,
+                duration: 0.95,
+                ease: 'power3.out',
+                overwrite: 'auto',
+              });
+
+              if (heroGlassCard) {
+                gsap.to(heroGlassCard, {
+                  x: 0,
+                  duration: 0.95,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                });
+              }
+
+              if (heroStatusChip) {
+                gsap.to(heroStatusChip, {
+                  x: 0,
+                  y: 0,
+                  duration: 0.95,
+                  ease: 'power3.out',
+                  overwrite: 'auto',
+                });
+              }
+            };
+
+            heroEl.addEventListener('pointermove', onHeroMove, { passive: true });
+            heroEl.addEventListener('pointerleave', onHeroLeave);
+            cleanups.push(() => {
+              heroEl.removeEventListener('pointermove', onHeroMove);
+              heroEl.removeEventListener('pointerleave', onHeroLeave);
+              gsap.set(heroShowcase, { clearProps: 'transform' });
+              if (heroGlassCard) gsap.set(heroGlassCard, { clearProps: 'x' });
+              if (heroStatusChip) gsap.set(heroStatusChip, { clearProps: 'x,y' });
+            });
+          }
         }
 
         return () => {
@@ -656,5 +746,56 @@
     });
   };
 
+  /* Fallback leve de interações de mouse caso o CDN do GSAP esteja offline */
+  const initFallbackPointerFX = () => {
+    if (
+      typeof window.gsap !== 'undefined' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      !window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches
+    ) {
+      return;
+    }
+
+    document.querySelectorAll('.spotlight-card').forEach((card) => {
+      card.addEventListener('pointermove', (event) => {
+        if (event.pointerType === 'touch') return;
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mouse-x', `${(event.clientX - rect.left).toFixed(1)}px`);
+        card.style.setProperty('--mouse-y', `${(event.clientY - rect.top).toFixed(1)}px`);
+      }, { passive: true });
+    });
+
+    document.querySelectorAll('.btn-magnetic').forEach((btn) => {
+      const strength = btn.classList.contains('btn--header') ? 0.2 : 0.25;
+      btn.style.transition = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease';
+      btn.addEventListener('pointermove', (event) => {
+        if (event.pointerType === 'touch') return;
+        const rect = btn.getBoundingClientRect();
+        const dx = Math.max(-14, Math.min(14, (event.clientX - rect.left - rect.width / 2) * strength));
+        const dy = Math.max(-9, Math.min(9, (event.clientY - rect.top - rect.height / 2) * strength));
+        btn.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`;
+      }, { passive: true });
+      btn.addEventListener('pointerleave', () => {
+        btn.style.transform = '';
+      });
+    });
+
+    const heroShowcase = document.getElementById('heroShowcase');
+    if (heroShowcase && heroEl) {
+      heroShowcase.style.transition = 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)';
+      heroEl.addEventListener('pointermove', (event) => {
+        if (event.pointerType === 'touch') return;
+        const rect = heroEl.getBoundingClientRect();
+        const nx = (event.clientX - rect.left) / rect.width - 0.5;
+        const ny = (event.clientY - rect.top) / rect.height - 0.5;
+        heroShowcase.style.transform = `perspective(1000px) rotateX(${(-ny * 7).toFixed(2)}deg) rotateY(${(nx * 10).toFixed(2)}deg) translate3d(${(nx * 14).toFixed(1)}px, ${(ny * 8).toFixed(1)}px, 0)`;
+      }, { passive: true });
+      heroEl.addEventListener('pointerleave', () => {
+        heroShowcase.style.transform = '';
+      });
+    }
+  };
+
   initGsapChoreography();
+  initFallbackPointerFX();
 })();
