@@ -1508,6 +1508,115 @@ main,
   color: var(--text-subtle);
 }
 
+/* Estágio arquitetônico dos símbolos animados de cada módulo */
+.module-emblem {
+  position: relative;
+  height: 118px;
+  border-radius: 16px;
+  margin-bottom: 1.4rem;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  background-color: rgba(18, 17, 24, 0.62);
+  transition: border-color 0.38s var(--ease-out), box-shadow 0.38s var(--ease-out);
+}
+
+.module-emblem::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: 22px 22px;
+  opacity: 0.55;
+}
+
+.module-emblem::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 0.38s ease;
+  opacity: 0.72;
+}
+
+.module-emblem--m1 {
+  border-color: rgba(127, 109, 192, 0.24);
+}
+
+.module-emblem--m1::before {
+  background-image:
+    linear-gradient(to right, rgba(167, 151, 224, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(167, 151, 224, 0.08) 1px, transparent 1px);
+}
+
+.module-emblem--m1::after {
+  background: radial-gradient(circle at 50% 50%, rgba(127, 109, 192, 0.22) 0%, transparent 68%);
+}
+
+.module-card--m1:hover .module-emblem--m1 {
+  border-color: rgba(167, 151, 224, 0.48);
+  box-shadow: 0 0 28px -10px rgba(127, 109, 192, 0.55) inset;
+}
+
+.module-emblem--m2 {
+  border-color: rgba(255, 129, 48, 0.26);
+}
+
+.module-emblem--m2::before {
+  background-image:
+    linear-gradient(to right, rgba(255, 145, 72, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 145, 72, 0.08) 1px, transparent 1px);
+}
+
+.module-emblem--m2::after {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 118, 48, 0.22) 0%, transparent 68%);
+}
+
+.module-card--m2:hover .module-emblem--m2 {
+  border-color: rgba(255, 145, 72, 0.52);
+  box-shadow: 0 0 28px -10px rgba(255, 129, 48, 0.55) inset;
+}
+
+.module-emblem--m3 {
+  border-color: rgba(255, 184, 48, 0.3);
+}
+
+.module-emblem--m3::before {
+  background-image:
+    linear-gradient(to right, rgba(255, 200, 88, 0.085) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 200, 88, 0.085) 1px, transparent 1px);
+}
+
+.module-emblem--m3::after {
+  background: radial-gradient(circle at 50% 50%, rgba(255, 184, 48, 0.24) 0%, transparent 68%);
+}
+
+.module-card--m3:hover .module-emblem--m3 {
+  border-color: rgba(255, 204, 88, 0.58);
+  box-shadow: 0 0 30px -10px rgba(255, 184, 48, 0.58) inset;
+}
+
+.module-card:hover .module-emblem::after {
+  opacity: 1;
+}
+
+.module-emblem__svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 196px;
+  height: 108px;
+  overflow: visible;
+}
+
+.module-emblem__svg path,
+.module-emblem__svg circle,
+.module-emblem__svg line,
+.module-emblem__svg g {
+  will-change: transform, opacity;
+}
+
 .module-card__title {
   font-family: var(--font-serif);
   font-size: clamp(1.65rem, 2.5vw, 2rem);

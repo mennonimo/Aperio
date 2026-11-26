@@ -476,6 +476,288 @@
         }
 
         /* ------------------------------------------------------------------
+           6.3B SÍMBOLOS ANIMADOS DOS 3 MÓDULOS (CÉREBRO, CORRENTE, CARISMA)
+           ------------------------------------------------------------------ */
+        const prepDrawPath = (pathEl) => {
+          if (!pathEl || typeof pathEl.getTotalLength !== 'function') return 0;
+          const len = Math.ceil(pathEl.getTotalLength());
+          gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len });
+          return len;
+        };
+
+        // --- MÓDULO 01: Cérebro com neurônios e raios sinápticos ---
+        const emblemBrain = document.getElementById('emblemBrain');
+        if (emblemBrain) {
+          const outlines = emblemBrain.querySelectorAll('.brain-outline');
+          const folds = emblemBrain.querySelectorAll('.brain-fold');
+          const bolts = Array.from(emblemBrain.querySelectorAll('.brain-bolt'));
+          const nodes = emblemBrain.querySelectorAll('.brain-node');
+          const rings = emblemBrain.querySelectorAll('.brain-node-ring');
+          const m1Card = emblemBrain.closest('.module-card');
+
+          outlines.forEach(prepDrawPath);
+          folds.forEach(prepDrawPath);
+          const boltLens = bolts.map((b) => {
+            const len = Math.ceil(b.getTotalLength());
+            gsap.set(b, { strokeDasharray: `${Math.round(len * 0.42)} ${len}`, strokeDashoffset: len, opacity: 0 });
+            return len;
+          });
+
+          const brainEnterTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: emblemBrain,
+              start: 'top 86%',
+              once: true,
+            },
+          });
+
+          brainEnterTl
+            .to(outlines, {
+              strokeDashoffset: 0,
+              duration: 1.15,
+              stagger: 0.14,
+              ease: 'power3.out',
+            }, 0)
+            .to(folds, {
+              strokeDashoffset: 0,
+              duration: 0.75,
+              stagger: 0.08,
+              ease: 'power2.out',
+            }, 0.35)
+            .from(nodes, {
+              scale: 0,
+              transformOrigin: '50% 50%',
+              duration: 0.55,
+              stagger: 0.06,
+              ease: 'back.out(2.2)',
+            }, 0.4);
+
+          // Loop vivo: impulsos elétricos percorrendo os raios + sinapses pulsando
+          const brainLoopTl = gsap.timeline({ repeat: -1, repeatDelay: 0.35 });
+          bolts.forEach((bolt, i) => {
+            const len = boltLens[i] || 60;
+            const at = i * 0.38;
+            brainLoopTl
+              .fromTo(
+                bolt,
+                { strokeDashoffset: len, opacity: 0 },
+                { strokeDashoffset: -len, opacity: 1, duration: 0.95, ease: 'power1.inOut' },
+                at
+              )
+              .to(bolt, { opacity: 0, duration: 0.25 }, at + 0.72);
+          });
+
+          rings.forEach((ring, i) => {
+            const at = i * 0.34;
+            brainLoopTl.fromTo(
+              ring,
+              { scale: 0.65, opacity: 0.85, transformOrigin: '50% 50%' },
+              { scale: 2.1, opacity: 0, duration: 1.05, ease: 'power2.out' },
+              at
+            );
+          });
+
+          if (m1Card && canHover) {
+            const onEnter = () => gsap.to(brainLoopTl, { timeScale: 1.9, duration: 0.4 });
+            const onLeave = () => gsap.to(brainLoopTl, { timeScale: 1, duration: 0.5 });
+            m1Card.addEventListener('pointerenter', onEnter);
+            m1Card.addEventListener('pointerleave', onLeave);
+            cleanups.push(() => {
+              m1Card.removeEventListener('pointerenter', onEnter);
+              m1Card.removeEventListener('pointerleave', onLeave);
+            });
+          }
+        }
+
+        // --- MÓDULO 02: Corrente sob tensão se quebrando com faíscas ---
+        const emblemChain = document.getElementById('emblemChain');
+        if (emblemChain) {
+          const chainLeft = emblemChain.querySelector('.chain-left');
+          const chainRight = emblemChain.querySelector('.chain-right');
+          const chainWave = emblemChain.querySelector('.chain-wave');
+          const chainFlash = emblemChain.querySelector('.chain-flash');
+          const chainSparks = Array.from(emblemChain.querySelectorAll('.chain-spark'));
+          const m2Card = emblemChain.closest('.module-card');
+
+          const sparkLens = chainSparks.map((s) => {
+            const len = Math.ceil(s.getTotalLength());
+            gsap.set(s, { strokeDasharray: len, strokeDashoffset: len, opacity: 0 });
+            return len;
+          });
+
+          const buildChainBreakCycle = () => {
+            const tl = gsap.timeline({ repeat: -1, repeatDelay: 2.6 });
+
+            // 1. Aproxima e gera tensão nas correntes presas
+            tl.set(chainLeft, { x: 8, y: 0, rotation: 0, svgOrigin: '78 52' })
+              .set(chainRight, { x: -8, y: 0, rotation: 0, svgOrigin: '102 52' })
+              .set(chainWave, { scale: 0.25, opacity: 0, svgOrigin: '90 52' })
+              .set(chainFlash, { scale: 0.2, opacity: 0, rotation: 0, svgOrigin: '90 52' })
+              .to(chainLeft, { x: 6.2, duration: 0.07, yoyo: true, repeat: 5, ease: 'power1.inOut' }, 0.2)
+              .to(chainRight, { x: -6.2, duration: 0.07, yoyo: true, repeat: 5, ease: 'power1.inOut' }, 0.2)
+
+              // 2. Ruptura explosiva (Quebra da barreira!)
+              .to(chainLeft, { x: -11, y: 2.5, rotation: -9, duration: 0.62, ease: 'power4.out' }, 0.65)
+              .to(chainRight, { x: 11, y: -2.5, rotation: 9, duration: 0.62, ease: 'power4.out' }, 0.65)
+              .fromTo(
+                chainFlash,
+                { scale: 0.3, opacity: 1, rotation: -20 },
+                { scale: 1.25, opacity: 0, rotation: 25, duration: 0.55, ease: 'power3.out' },
+                0.64
+              )
+              .fromTo(
+                chainWave,
+                { scale: 0.3, opacity: 0.9 },
+                { scale: 2.15, opacity: 0, duration: 0.78, ease: 'power2.out' },
+                0.65
+              );
+
+            chainSparks.forEach((spark, idx) => {
+              const len = sparkLens[idx] || 18;
+              tl.fromTo(
+                spark,
+                { strokeDashoffset: len, opacity: 1 },
+                { strokeDashoffset: -len, opacity: 0, duration: 0.58, ease: 'power2.out' },
+                0.65 + (idx % 3) * 0.035
+              );
+            });
+
+            // 3. Flutuação leve das metades já libertas antes de reiniciar suavemente
+            tl.to(chainLeft, { y: -1.5, rotation: -6.5, duration: 1.15, ease: 'sine.inOut' }, 1.35)
+              .to(chainRight, { y: 1.5, rotation: 6.5, duration: 1.15, ease: 'sine.inOut' }, 1.35)
+              .to([chainLeft, chainRight], { y: 0, rotation: 0, duration: 0.65, ease: 'power2.inOut' }, 2.75)
+              .to(chainLeft, { x: 8, duration: 0.65, ease: 'power2.inOut' }, 2.75)
+              .to(chainRight, { x: -8, duration: 0.65, ease: 'power2.inOut' }, 2.75);
+
+            return tl;
+          };
+
+          const chainLoopTl = buildChainBreakCycle();
+          chainLoopTl.pause(0);
+
+          ScrollTrigger.create({
+            trigger: emblemChain,
+            start: 'top 86%',
+            once: true,
+            onEnter: () => chainLoopTl.play(0),
+          });
+
+          if (m2Card && canHover) {
+            const onEnter = () => {
+              // Dispara imediatamente o momento exato da ruptura ao passar o mouse
+              chainLoopTl.play(0.55);
+            };
+            m2Card.addEventListener('pointerenter', onEnter);
+            cleanups.push(() => m2Card.removeEventListener('pointerenter', onEnter));
+          }
+        }
+
+        // --- MÓDULO 03: Carisma (Estrela Solar + Ondas de Presença + Órbita) ---
+        const emblemCharisma = document.getElementById('emblemCharisma');
+        if (emblemCharisma) {
+          const core = emblemCharisma.querySelector('.charisma-core');
+          const wave1 = emblemCharisma.querySelector('.charisma-wave--1');
+          const wave2 = emblemCharisma.querySelector('.charisma-wave--2');
+          const orbit = emblemCharisma.querySelector('.charisma-orbit');
+          const rays = emblemCharisma.querySelectorAll('.charisma-ray');
+          const sats = emblemCharisma.querySelectorAll('.charisma-sat');
+          const m3Card = emblemCharisma.closest('.module-card');
+
+          const charismaEnterTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: emblemCharisma,
+              start: 'top 86%',
+              once: true,
+            },
+          });
+
+          charismaEnterTl
+            .from(core, {
+              scale: 0,
+              rotation: -45,
+              svgOrigin: '90 52',
+              duration: 0.95,
+              ease: 'back.out(1.85)',
+            }, 0)
+            .from(rays, {
+              scale: 0,
+              opacity: 0,
+              svgOrigin: '90 52',
+              duration: 0.65,
+              stagger: 0.08,
+              ease: 'power3.out',
+            }, 0.25)
+            .from(orbit, {
+              opacity: 0,
+              scale: 0.72,
+              svgOrigin: '90 52',
+              duration: 0.85,
+              ease: 'power3.out',
+            }, 0.22)
+            .add(() => {
+              // Respiração luminosa contínua da estrela central após a entrada
+              gsap.to(core, {
+                scale: 1.09,
+                svgOrigin: '90 52',
+                duration: 2.2,
+                ease: 'sine.inOut',
+                repeat: -1,
+                yoyo: true,
+              });
+            });
+
+          // Ondas concêntricas contínuas irradiando presença magnética
+          [wave1, wave2].forEach((wave, idx) => {
+            if (!wave) return;
+            gsap.fromTo(
+              wave,
+              { scale: 0.55, opacity: 0.75, svgOrigin: '90 52' },
+              {
+                scale: 1.78,
+                opacity: 0,
+                duration: 2.6,
+                delay: idx * 1.3,
+                ease: 'power1.out',
+                repeat: -1,
+              }
+            );
+          });
+
+          // Órbita suave de conexões atraídas ao redor do centro exato (90, 52)
+          const orbitTween = gsap.to(orbit, {
+            rotation: 360,
+            svgOrigin: '90 52',
+            duration: 18,
+            ease: 'none',
+            repeat: -1,
+          });
+
+          // Cintilação sutil dos satélites
+          gsap.to(sats, {
+            opacity: 0.42,
+            duration: 1.4,
+            stagger: { each: 0.35, repeat: -1, yoyo: true },
+            ease: 'sine.inOut',
+          });
+
+          if (m3Card && canHover) {
+            const onEnter = () => {
+              gsap.to(orbitTween, { timeScale: 2.6, duration: 0.45 });
+              gsap.to(core, { rotation: '+=45', svgOrigin: '90 52', duration: 0.7, ease: 'back.out(1.6)', overwrite: 'auto' });
+            };
+            const onLeave = () => {
+              gsap.to(orbitTween, { timeScale: 1, duration: 0.6 });
+            };
+            m3Card.addEventListener('pointerenter', onEnter);
+            m3Card.addEventListener('pointerleave', onLeave);
+            cleanups.push(() => {
+              m3Card.removeEventListener('pointerenter', onEnter);
+              m3Card.removeEventListener('pointerleave', onLeave);
+            });
+          }
+        }
+
+        /* ------------------------------------------------------------------
            6.4 SEÇÃO DO APRESENTADOR (CLIP-PATH REVEAL + PARALLAX SOBREPOSTO)
            ------------------------------------------------------------------ */
         const presenterMedia = document.getElementById('presenterMedia');
